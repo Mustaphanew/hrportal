@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:dio/dio.dart';
 
 import '../constants/api_constants.dart';
@@ -76,7 +74,6 @@ class ApiClient {
       () => _dio.get(path, queryParameters: queryParameters),
       fromJson: fromJson,
     );
-    print("response get: $response");
     return response;
   }
 
@@ -90,7 +87,6 @@ class ApiClient {
       () => _dio.post(path, data: data),
       fromJson: fromJson,
     );
-    print("response post: $response");
     return response;
   }
 
@@ -104,7 +100,6 @@ class ApiClient {
       () => _dio.put(path, data: data),
       fromJson: fromJson,
     );
-    print("response put: $response");
     return response;
   }
 
@@ -117,7 +112,6 @@ class ApiClient {
       () => _dio.delete(path),
       fromJson: fromJson,
     );
-    print("response delete: $response");
     return response;
   }
 
@@ -178,8 +172,11 @@ class ApiClient {
       rethrow;
     } on DioException catch (e) {
       throw _mapDioException(e);
-    } on SocketException {
-      throw const NetworkException();
+    } catch (e) {
+      // On Web, low-level socket errors are surfaced differently.
+      // On IO platforms, some adapters may still throw non-Dio exceptions.
+      // We keep this as a safe fallback.
+      throw ServerException(message: 'Unexpected error: ${e.toString()}');
     }
   }
 

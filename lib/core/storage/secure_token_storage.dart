@@ -1,4 +1,5 @@
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 
 import '../constants/storage_keys.dart';
 
@@ -14,11 +15,15 @@ class SecureTokenStorage {
 
   SecureTokenStorage({FlutterSecureStorage? storage})
       : _storage = storage ??
-            const FlutterSecureStorage(
-              aOptions: AndroidOptions(
-                encryptedSharedPreferences: true,
-              ),
-            );
+            (kIsWeb
+                // Web: stored in browser storage (not the same security
+                // guarantees as Keychain/EncryptedSharedPreferences).
+                ? const FlutterSecureStorage()
+                : const FlutterSecureStorage(
+                    aOptions: AndroidOptions(
+                      encryptedSharedPreferences: true,
+                    ),
+                  ));
 
   // ── Token ─────────────────────────────────────────────────────────
 

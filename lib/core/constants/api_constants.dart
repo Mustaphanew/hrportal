@@ -32,9 +32,9 @@ class ApiConstants {
   static const int sendTimeout = 10000;
 
   // ── Auth ────────────────────────────────────────────────────────────
-  static const String login = '/login';
-  static const String logout = '/logout';
-  static const String logoutAll = '/logout-all';
+  static const String login = '/auth/login';
+  static const String logout = '/auth/logout';
+  static const String logoutAll = '/auth/logout-all';
   static const String me = '/me';
 
   // ── Profile ─────────────────────────────────────────────────────────
