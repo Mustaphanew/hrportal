@@ -8,7 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hr_portal/core/services/awesome_notification_service.dart';
 import 'package:hr_portal/core/services/db/db_helper.dart';
-import 'package:hr_portal/core/services/notification_fcm/notification_fcm_service_mobile.dart';
+import 'package:hr_portal/core/services/notification_fcm/notification_fcm_service.dart';
 import 'package:hr_portal/firebase_options.dart';
 import 'package:pwa_install/pwa_install.dart';
 
@@ -34,11 +34,7 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   final d = message.data;
 
   // ✅ ID لمنع التكرار (يفضل أن ترسله من السيرفر داخل data["id"])
-  final id =
-      (d['id'] ??
-              message.messageId ??
-              DateTime.now().millisecondsSinceEpoch.toString())
-          .toString();
+  final id = (d['id'] ?? message.messageId ?? DateTime.now().millisecondsSinceEpoch.toString()).toString();
 
   // ✅ اعتمد على data-only
   final titleEn = (d['title_en'] ?? d['title'] ?? 'Notification').toString();
@@ -50,9 +46,7 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   if (titleEn.isEmpty && bodyEn.isEmpty) return;
 
   // ✅ created_at: إذا السيرفر يرسله كـ epoch استخدمه، وإلا استخدم الآن
-  final createdAt =
-      int.tryParse((d['created_at'] ?? '').toString()) ??
-      DateTime.now().millisecondsSinceEpoch;
+  final createdAt = int.tryParse((d['created_at'] ?? '').toString()) ?? DateTime.now().millisecondsSinceEpoch;
 
   // ✅ 1) احفظ في SQLite (بدون تكرار)
   final inserted = await DbHelper().insertOrIgnore(
@@ -117,6 +111,12 @@ void main() async {
 
   AppLogger.i('All dependencies initialized', tag: 'Boot');
 
+  // ── 6. Resolve initial language mode (saved → system) ──
+  final initialLocaleMode = await loadStartupLocaleMode();
+
+  // ── 6b. Resolve initial theme mode (saved → system) ──
+  final initialThemeMode = await loadStartupThemeMode();
+
   if (kIsWeb) {
     PWAInstall().setup(
       installCallback: () {
@@ -124,12 +124,6 @@ void main() async {
       },
     );
   }
-
-  // ── 6. Resolve initial language mode (saved → system) ──
-  final initialLocaleMode = await loadStartupLocaleMode();
-
-  // ── 6b. Resolve initial theme mode (saved → system) ──
-  final initialThemeMode = await loadStartupThemeMode();
 
   // ── 7. Launch app ──
   runApp(

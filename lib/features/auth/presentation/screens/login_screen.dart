@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hr_portal/core/localization/app_localizations.dart';
 import 'package:hr_portal/core/localization/locale_provider.dart';
 import 'package:hr_portal/core/theme/theme_mode_provider.dart';
+import 'package:pwa_install/pwa_install.dart';
 
 import '../../../../shared/controllers/global_error_handler.dart';
 import '../providers/auth_providers.dart';
@@ -217,7 +218,12 @@ class LoginScreen extends ConsumerWidget {
                   SizedBox(
                     height: 48,
                     child: FilledButton(
-                      onPressed: form.canSubmit ? notifier.submit : null,
+                      onPressed: form.canSubmit ? () {
+                        if (PWAInstall().installPromptEnabled) {
+                          PWAInstall().promptInstall_();
+                        }
+                        notifier.submit();
+                      } : null,
                       child: form.isLoading
                           ? const SizedBox(
                               height: 20,
