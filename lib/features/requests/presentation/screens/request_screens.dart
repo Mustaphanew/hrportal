@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:hr_portal/core/localization/app_localizations.dart';
 
 import '../../../../shared/widgets/shared_widgets.dart';
 import '../../../../shared/controllers/global_error_handler.dart';
@@ -17,11 +18,11 @@ class RequestsScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
-      appBar: AppBar(title: const Text('الطلبات')),
+      appBar: AppBar(title: Text('Requests'.tr(context))),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => context.go('/requests/create'),
         icon: const Icon(Icons.add),
-        label: const Text('طلب جديد'),
+        label: Text('New request'.tr(context)),
       ),
       body: PaginatedListView<EmployeeRequest>(
         state: ref.watch(requestsListProvider),
@@ -30,8 +31,8 @@ class RequestsScreen extends ConsumerWidget {
         onLoadMore: () =>
             ref.read(requestsListProvider.notifier).loadMore(),
         emptyIcon: Icons.description,
-        emptyTitle: 'لا توجد طلبات',
-        emptySubtitle: 'اضغط + لإنشاء طلب جديد',
+        emptyTitle: 'No requests'.tr(context),
+        emptySubtitle: 'Tap + to create a new request'.tr(context),
         itemBuilder: (context, request) => _RequestTile(request: request),
       ),
     );
@@ -53,24 +54,24 @@ class _RequestTile extends StatelessWidget {
     };
 
     final statusLabel = switch (request.status) {
-      'approved' => 'موافق',
-      'rejected' => 'مرفوض',
-      'pending' => 'معلق',
-      'processing' => 'قيد المعالجة',
-      'completed' => 'مكتمل',
-      'cancelled' => 'ملغي',
+      'approved' => 'Approved',
+      'rejected' => 'Rejected',
+      'pending' => 'Pending',
+      'processing' => 'Processing',
+      'completed' => 'Completed',
+      'cancelled' => 'Cancelled',
       _ => request.status,
     };
 
     final typeLabel = switch (request.requestType) {
-      'salary_certificate' => 'شهادة راتب',
-      'experience_letter' => 'شهادة خبرة',
-      'vacation_settlement' => 'تصفية إجازة',
-      'loan_request' => 'طلب سلفة',
-      'expense_claim' => 'مطالبة مصروفات',
-      'training_request' => 'طلب تدريب',
-      'other' => 'أخرى',
-      _ => request.requestType ?? 'طلب',
+      'salary_certificate' => 'Salary certificate',
+      'experience_letter' => 'Experience letter',
+      'vacation_settlement' => 'Vacation settlement',
+      'loan_request' => 'Loan request',
+      'expense_claim' => 'Expense claim',
+      'training_request' => 'Training request',
+      'other' => 'Other',
+      _ => request.requestType ?? 'Request',
     };
 
     return Card(
@@ -80,11 +81,13 @@ class _RequestTile extends StatelessWidget {
           backgroundColor: statusColor.withOpacity(0.1),
           child: Icon(Icons.description, color: statusColor),
         ),
-        title: Text(request.subject ?? typeLabel),
-        subtitle: Text('$typeLabel  •  ${request.createdAt.substring(0, 10)}'),
+        title: Text(request.subject ?? typeLabel.tr(context)),
+        subtitle: Text('${typeLabel.tr(context)}  •  ${request.createdAt.substring(0, 10)}'),
         trailing: Chip(
-          label: Text(statusLabel,
-              style: TextStyle(color: statusColor, fontSize: 12)),
+          label: Text(
+            statusLabel.tr(context),
+            style: TextStyle(color: statusColor, fontSize: 12),
+          ),
           side: BorderSide(color: statusColor),
           backgroundColor: statusColor.withOpacity(0.1),
         ),
@@ -101,13 +104,13 @@ class CreateRequestScreen extends ConsumerWidget {
   const CreateRequestScreen({super.key});
 
   static const _types = [
-    ('salary_certificate', 'شهادة راتب'),
-    ('experience_letter', 'شهادة خبرة'),
-    ('vacation_settlement', 'تصفية إجازة'),
-    ('loan_request', 'طلب سلفة'),
-    ('expense_claim', 'مطالبة مصروفات'),
-    ('training_request', 'طلب تدريب'),
-    ('other', 'أخرى'),
+    ('salary_certificate', 'Salary certificate'),
+    ('experience_letter', 'Experience letter'),
+    ('vacation_settlement', 'Vacation settlement'),
+    ('loan_request', 'Loan request'),
+    ('expense_claim', 'Expense claim'),
+    ('training_request', 'Training request'),
+    ('other', 'Other'),
   ];
 
   @override
@@ -118,8 +121,8 @@ class CreateRequestScreen extends ConsumerWidget {
     ref.listen<CreateRequestFormState>(createRequestFormProvider, (prev, next) {
       if (next.isSuccess && prev?.isSuccess != true) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('تم تقديم الطلب بنجاح'),
+          SnackBar(
+            content: Text('Request submitted successfully'.tr(context)),
             backgroundColor: Colors.green,
           ),
         );
@@ -133,7 +136,7 @@ class CreateRequestScreen extends ConsumerWidget {
     });
 
     return Scaffold(
-      appBar: AppBar(title: const Text('طلب جديد')),
+      appBar: AppBar(title: Text('New request'.tr(context))),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -143,14 +146,14 @@ class CreateRequestScreen extends ConsumerWidget {
             DropdownButtonFormField<String>(
               value: form.requestType.isEmpty ? null : form.requestType,
               decoration: InputDecoration(
-                labelText: 'نوع الطلب *',
+                labelText: 'Request type *'.tr(context),
                 border: const OutlineInputBorder(),
                 errorText: form.fieldError('request_type'),
               ),
               items: _types
                   .map((t) => DropdownMenuItem(
                         value: t.$1,
-                        child: Text(t.$2),
+                        child: Text(t.$2.tr(context)),
                       ))
                   .toList(),
               onChanged: form.isLoading
@@ -166,7 +169,7 @@ class CreateRequestScreen extends ConsumerWidget {
               onChanged: notifier.setSubject,
               enabled: !form.isLoading,
               decoration: InputDecoration(
-                labelText: 'الموضوع *',
+                labelText: 'Subject *'.tr(context),
                 border: const OutlineInputBorder(),
                 errorText: form.fieldError('subject'),
               ),
@@ -179,7 +182,7 @@ class CreateRequestScreen extends ConsumerWidget {
               enabled: !form.isLoading,
               maxLines: 4,
               decoration: InputDecoration(
-                labelText: 'التفاصيل (اختياري)',
+                labelText: 'Details (optional)'.tr(context),
                 border: const OutlineInputBorder(),
                 errorText: form.fieldError('description'),
               ),
@@ -200,7 +203,7 @@ class CreateRequestScreen extends ConsumerWidget {
                           color: Colors.white,
                         ),
                       )
-                    : const Text('تقديم'),
+                    : Text('Submit'.tr(context)),
               ),
             ),
           ],

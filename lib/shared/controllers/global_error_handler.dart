@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:hr_portal/core/localization/app_localizations.dart';
 
 import '../../core/errors/exceptions.dart';
 
@@ -63,7 +64,7 @@ class GlobalErrorHandler {
     if (error is ValidationException) {
       return UiError(
         action: ErrorAction.showFieldErrors,
-        title: 'بيانات غير صحيحة',
+        title: 'Invalid data',
         message: error.message,
         fieldErrors: error.fieldErrors,
         traceId: error.traceId,
@@ -73,8 +74,8 @@ class GlobalErrorHandler {
     if (error is TokenExpiredException || error is TokenInvalidException) {
       return UiError(
         action: ErrorAction.redirectToLogin,
-        title: 'انتهت الجلسة',
-        message: 'انتهت صلاحية الجلسة. يرجى تسجيل الدخول مرة أخرى.',
+        title: 'Session expired',
+        message: 'Your session has expired. Please sign in again.',
         traceId: (error as ApiException).traceId,
       );
     }
@@ -82,8 +83,8 @@ class GlobalErrorHandler {
     if (error is AuthRequiredException) {
       return UiError(
         action: ErrorAction.redirectToLogin,
-        title: 'غير مصادق',
-        message: 'يرجى تسجيل الدخول.',
+        title: 'Not authenticated',
+        message: 'Please sign in.',
         traceId: error.traceId,
       );
     }
@@ -92,7 +93,7 @@ class GlobalErrorHandler {
         error is InsufficientPermissionsException) {
       return UiError(
         action: ErrorAction.showDialog,
-        title: 'غير مصرح',
+        title: 'Unauthorized',
         message: (error as ApiException).message,
         traceId: (error as ApiException).traceId,
       );
@@ -101,7 +102,7 @@ class GlobalErrorHandler {
     if (error is ResourceConflictException) {
       return UiError(
         action: ErrorAction.showSnackbar,
-        title: 'تعارض',
+        title: 'Conflict',
         message: error.message,
         traceId: error.traceId,
       );
@@ -110,7 +111,7 @@ class GlobalErrorHandler {
     if (error is BusinessRuleException) {
       return UiError(
         action: ErrorAction.showDialog,
-        title: 'غير مسموح',
+        title: 'Not allowed',
         message: error.message,
         traceId: error.traceId,
       );
@@ -119,7 +120,7 @@ class GlobalErrorHandler {
     if (error is ResourceNotFoundException) {
       return UiError(
         action: ErrorAction.showSnackbar,
-        title: 'غير موجود',
+        title: 'Not found',
         message: error.message,
         traceId: error.traceId,
       );
@@ -128,8 +129,8 @@ class GlobalErrorHandler {
     if (error is RateLimitedException) {
       return UiError(
         action: ErrorAction.showSnackbar,
-        title: 'طلبات كثيرة',
-        message: 'يرجى الانتظار قليلاً ثم المحاولة مرة أخرى.',
+        title: 'Too many requests',
+        message: 'Please wait a moment and try again.',
         traceId: error.traceId,
       );
     }
@@ -137,24 +138,24 @@ class GlobalErrorHandler {
     if (error is NetworkException) {
       return UiError(
         action: ErrorAction.showFullScreen,
-        title: 'لا يوجد اتصال',
-        message: 'تحقق من اتصال الإنترنت وحاول مرة أخرى.',
+        title: 'No connection',
+        message: 'Check your internet connection and try again.',
       );
     }
 
     if (error is TimeoutException) {
       return UiError(
         action: ErrorAction.showSnackbar,
-        title: 'انتهت المهلة',
-        message: 'الخادم بطيء. حاول مرة أخرى.',
+        title: 'Timeout',
+        message: 'The server is slow. Try again.',
       );
     }
 
     if (error is ServerException || error is ServiceUnavailableException) {
       return UiError(
         action: ErrorAction.showFullScreen,
-        title: 'خطأ في الخادم',
-        message: 'حدث خطأ فني. حاول لاحقاً.',
+        title: 'Server error',
+        message: 'A technical error occurred. Try again later.',
         traceId: (error as ApiException).traceId,
       );
     }
@@ -163,7 +164,7 @@ class GlobalErrorHandler {
     if (error is ApiException) {
       return UiError(
         action: ErrorAction.showSnackbar,
-        title: 'خطأ',
+        title: 'Error',
         message: error.message,
         traceId: error.traceId,
       );
@@ -171,7 +172,7 @@ class GlobalErrorHandler {
 
     return UiError(
       action: ErrorAction.showSnackbar,
-      title: 'خطأ غير متوقع',
+      title: 'Unexpected error',
       message: error.toString(),
     );
   }
@@ -215,7 +216,7 @@ class GlobalErrorHandler {
     if (!context.mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(message),
+        content: Text(message.tr(context)),
         backgroundColor:
             isError ? Theme.of(context).colorScheme.error : null,
         behavior: SnackBarBehavior.floating,
@@ -233,12 +234,12 @@ class GlobalErrorHandler {
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
-        title: Text(title),
-        content: Text(message),
+        title: Text(title.tr(context)),
+        content: Text(message.tr(context)),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text('حسناً'),
+            child: Text('OK'.tr(context)),
           ),
         ],
       ),

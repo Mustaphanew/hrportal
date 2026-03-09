@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "272357624227",
+    "project_id": "hr-portal-8317c",
+    "storage_bucket": "hr-portal-8317c.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:272357624227:android:47d28fb3205209748c3216",
+        "android_client_info": {
+          "package_name": "com.newhorizon.hr.hr_portal"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBQtbjnJYZgvU1luB0hzDxe3eq9rUYRX-c"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

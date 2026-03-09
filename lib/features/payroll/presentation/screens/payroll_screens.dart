@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:hr_portal/core/localization/app_localizations.dart';
 
 import '../../../../shared/widgets/shared_widgets.dart';
 import '../../../../shared/controllers/global_error_handler.dart';
@@ -17,7 +18,7 @@ class PayrollScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
-      appBar: AppBar(title: const Text('كشف الرواتب')),
+      appBar: AppBar(title: Text('Payroll'.tr(context))),
       body: PaginatedListView<Payslip>(
         state: ref.watch(payslipListProvider),
         onRefresh: () =>
@@ -25,7 +26,7 @@ class PayrollScreen extends ConsumerWidget {
         onLoadMore: () =>
             ref.read(payslipListProvider.notifier).loadMore(),
         emptyIcon: Icons.receipt_long,
-        emptyTitle: 'لا توجد كشوف رواتب',
+        emptyTitle: 'No payslips'.tr(context),
         itemBuilder: (context, payslip) => _PayslipTile(payslip: payslip),
       ),
     );
@@ -41,7 +42,7 @@ class _PayslipTile extends StatelessWidget {
     final period = payslip.periodStart != null &&
             payslip.periodStart!.length >= 7
         ? payslip.periodStart!.substring(0, 7)
-        : 'غير محدد';
+        : 'Unknown'.tr(context);
 
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
@@ -50,10 +51,10 @@ class _PayslipTile extends StatelessWidget {
           backgroundColor: Colors.green.shade50,
           child: const Icon(Icons.payments, color: Colors.green),
         ),
-        title: Text('فترة $period'),
+        title: Text('${'Period'.tr(context)} $period'),
         subtitle: Text(
-          'إجمالي: ${payslip.totalGross.toStringAsFixed(2)}'
-          '  •  صافي: ${payslip.totalNet.toStringAsFixed(2)}'
+          '${'Gross'.tr(context)}: ${payslip.totalGross.toStringAsFixed(2)}'
+          '  •  ${'Net'.tr(context)}: ${payslip.totalNet.toStringAsFixed(2)}'
           '${payslip.currency != null ? ' ${payslip.currency}' : ''}',
         ),
         trailing: const Icon(Icons.chevron_right),
@@ -82,7 +83,9 @@ class PayslipDetailScreen extends ConsumerWidget {
     final detailAsync = ref.watch(payslipDetailProvider(month));
 
     return Scaffold(
-      appBar: AppBar(title: Text('كشف الراتب — $month')),
+      appBar: AppBar(
+        title: Text('Payslip — {month}'.tr(context, params: {'month': month})),
+      ),
       body: detailAsync.when(
         loading: () => const LoadingIndicator(),
         error: (e, _) => ErrorFullScreen(
@@ -98,12 +101,18 @@ class PayslipDetailScreen extends ConsumerWidget {
                 padding: const EdgeInsets.all(16),
                 child: Column(
                   children: [
-                    _Row(label: 'إجمالي الراتب', value: payslip.totalGross),
+                    _Row(
+                      label: 'Total gross'.tr(context),
+                      value: payslip.totalGross,
+                    ),
                     const Divider(),
-                    _Row(label: 'الخصومات', value: payslip.totalDeductions),
+                    _Row(
+                      label: 'Deductions'.tr(context),
+                      value: payslip.totalDeductions,
+                    ),
                     const Divider(thickness: 2),
                     _Row(
-                      label: 'صافي الراتب',
+                      label: 'Net pay'.tr(context),
                       value: payslip.totalNet,
                       bold: true,
                     ),
@@ -115,12 +124,20 @@ class PayslipDetailScreen extends ConsumerWidget {
 
             // ── Lines ──
             if (payslip.lines != null && payslip.lines!.isNotEmpty) ...[
-              Text('التفاصيل',
-                  style: Theme.of(context).textTheme.titleMedium),
+              Text(
+                'Details'.tr(context),
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
               const SizedBox(height: 8),
               ...payslip.lines!.map((line) => ListTile(
-                    title: Text(line.ruleName ?? line.ruleCode ?? 'بند'),
-                    subtitle: Text(line.isEarning ? 'استحقاق' : 'خصم'),
+                    title: Text(
+                      line.ruleName ?? line.ruleCode ?? 'Item'.tr(context),
+                    ),
+                    subtitle: Text(
+                      line.isEarning
+                          ? 'Earning'.tr(context)
+                          : 'Deduction'.tr(context),
+                    ),
                     trailing: Text(
                       '${line.isEarning ? '+' : '-'}${line.amount.toStringAsFixed(2)}',
                       style: TextStyle(
@@ -142,9 +159,11 @@ class PayslipDetailScreen extends ConsumerWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         if (payslip.paymentMethod != null)
-                          Text('طريقة الدفع: ${payslip.paymentMethod}'),
+                          Text(
+                            '${'Payment method'.tr(context)}: ${payslip.paymentMethod}',
+                          ),
                         if (payslip.paidAt != null)
-                          Text('تاريخ الدفع: ${payslip.paidAt}'),
+                          Text('${'Paid at'.tr(context)}: ${payslip.paidAt}'),
                       ],
                     ),
                   ),

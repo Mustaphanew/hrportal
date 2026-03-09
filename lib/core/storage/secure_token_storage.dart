@@ -5,7 +5,7 @@ import '../constants/storage_keys.dart';
 
 /// Wrapper around [FlutterSecureStorage] for storing auth/session values.
 ///
-/// - Android: uses EncryptedSharedPreferences
+/// - Android: uses Keystore-backed secure storage (plugin-managed)
 /// - iOS: uses Keychain
 ///
 /// ✅ Stores only non-sensitive identifiers + access token.
@@ -17,13 +17,9 @@ class SecureTokenStorage {
       : _storage = storage ??
             (kIsWeb
                 // Web: stored in browser storage (not the same security
-                // guarantees as Keychain/EncryptedSharedPreferences).
+                // guarantees as Keychain/Android Keystore-backed storage).
                 ? const FlutterSecureStorage()
-                : const FlutterSecureStorage(
-                    aOptions: AndroidOptions(
-                      encryptedSharedPreferences: true,
-                    ),
-                  ));
+                : const FlutterSecureStorage());
 
   // ── Token ─────────────────────────────────────────────────────────
 
@@ -65,6 +61,10 @@ class SecureTokenStorage {
   // ── Clear ─────────────────────────────────────────────────────────
 
   Future<void> clearAll() async {
-    await _storage.deleteAll();
+    // ⚠️ Don't use `deleteAll()` because the app may store other persistent
+    // preferences (like language) in secure storage.
+    await _storage.delete(key: StorageKeys.token);
+    await _storage.delete(key: StorageKeys.employeeId);
+    await _storage.delete(key: StorageKeys.companyId);
   }
 }

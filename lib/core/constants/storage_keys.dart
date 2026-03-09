@@ -7,4 +7,14 @@ class StorageKeys {
   static const String token = 'access_token';
   static const String employeeId = 'employee_id';
   static const String companyId = 'company_id';
+
+  /// Persisted user language preference.
+  ///
+  /// Values are expected to be one of: 'system', 'en', 'ar'.
+  static const String locale = 'app_locale';
+
+  /// Persisted theme mode preference.
+  ///
+  /// Values are expected to be one of: 'system', 'light', 'dark'.
+  static const String themeMode = 'app_theme_mode';
 }

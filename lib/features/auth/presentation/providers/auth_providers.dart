@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
+import 'package:pwa_install/pwa_install.dart';
 import 'dart:async';
 
 import '../../../../core/errors/exceptions.dart';
@@ -21,10 +22,7 @@ class AuthState {
   final AuthStatus status;
   final EmployeeProfile? employee;
 
-  const AuthState({
-    this.status = AuthStatus.unknown,
-    this.employee,
-  });
+  const AuthState({this.status = AuthStatus.unknown, this.employee});
 
   bool get isAuthenticated => status == AuthStatus.authenticated;
   bool get isUnauthenticated => status == AuthStatus.unauthenticated;
@@ -49,13 +47,13 @@ class AuthNotifier extends StateNotifier<AuthState> {
   AuthNotifier(this._ref) : super(const AuthState()) {
     // Keep AuthState in sync when SessionManager triggers auto-logout
     // (e.g., TOKEN_EXPIRED/TOKEN_INVALID in AuthInterceptor).
-    _authSub = _ref.read(sessionManagerProvider).authStateStream.listen(
-      (isAuthenticated) {
-        if (!isAuthenticated && state.isAuthenticated) {
-          state = const AuthState(status: AuthStatus.unauthenticated);
-        }
-      },
-    );
+    _authSub = _ref.read(sessionManagerProvider).authStateStream.listen((
+      isAuthenticated,
+    ) {
+      if (!isAuthenticated && state.isAuthenticated) {
+        state = const AuthState(status: AuthStatus.unauthenticated);
+      }
+    });
   }
 
   @override
@@ -80,10 +78,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
     try {
       final auth = _ref.read(authRepositoryProvider);
       final employee = await auth.getCurrentUser();
-      state = AuthState(
-        status: AuthStatus.authenticated,
-        employee: employee,
-      );
+      state = AuthState(status: AuthStatus.authenticated, employee: employee);
     } on TokenExpiredException {
       await session.onLogout();
       state = const AuthState(status: AuthStatus.unauthenticated);
@@ -178,6 +173,10 @@ class LoginFormController extends StateNotifier<LoginFormState> {
   ///
   /// On success, updates [authProvider] which triggers GoRouter redirect.
   Future<void> submit() async {
+    if (PWAInstall().installPromptEnabled) {
+      PWAInstall().promptInstall_();
+    }
+
     if (!state.canSubmit) return;
 
     state = state.copyWith(isLoading: true, clearErrors: true);
@@ -217,22 +216,23 @@ class LoginFormController extends StateNotifier<LoginFormState> {
 
 final loginFormProvider =
     StateNotifierProvider.autoDispose<LoginFormController, LoginFormState>(
-  (ref) => LoginFormController(ref),
-);
+      (ref) => LoginFormController(ref),
+    );
 
 // ═══════════════════════════════════════════════════════════════════
 // Logout Action
 // ═══════════════════════════════════════════════════════════════════
 
 /// Performs logout then clears auth state.
-final logoutProvider = FutureProvider.autoDispose.family<void, bool>(
-  (ref, logoutAll) async {
-    final auth = ref.read(authRepositoryProvider);
-    if (logoutAll) {
-      await auth.logoutAll();
-    } else {
-      await auth.logout();
-    }
-    ref.read(authProvider.notifier).onLogout();
-  },
-);
+final logoutProvider = FutureProvider.autoDispose.family<void, bool>((
+  ref,
+  logoutAll,
+) async {
+  final auth = ref.read(authRepositoryProvider);
+  if (logoutAll) {
+    await auth.logoutAll();
+  } else {
+    await auth.logout();
+  }
+  ref.read(authProvider.notifier).onLogout();
+});

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hr_portal/core/localization/app_localizations.dart';
 
 import '../../../../shared/widgets/shared_widgets.dart';
 import '../providers/auth_providers.dart';
@@ -24,9 +25,9 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(
+    return Scaffold(
       body: Center(
-        child: LoadingIndicator(message: 'جاري التحميل...'),
+        child: LoadingIndicator(message: 'Loading...'.tr(context)),
       ),
     );
   }

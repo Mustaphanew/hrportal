@@ -1,8 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:jiffy/jiffy.dart';
 
 import 'router/app_router.dart';
 import 'core/providers/core_providers.dart';
+import 'core/localization/app_localizations.dart';
+import 'core/localization/locale_provider.dart';
+import 'core/theme/app_theme.dart';
+import 'core/theme/theme_mode_provider.dart';
 import 'shared/widgets/shared_widgets.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 
@@ -11,7 +16,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 /// Sets up:
 /// 1. [ProviderScope] for Riverpod
 /// 2. [MaterialApp.router] with GoRouter
-/// 3. RTL + Arabic locale
+/// 3. Localization (EN default + AR)
 /// 4. Session expired callback → GoRouter redirect
 class HrMobileApp extends ConsumerStatefulWidget {
   const HrMobileApp({super.key});
@@ -21,9 +26,12 @@ class HrMobileApp extends ConsumerStatefulWidget {
 }
 
 class _HrMobileAppState extends ConsumerState<HrMobileApp> {
+  String? _jiffyLocaleCode;
+
   @override
   void initState() {
     super.initState();
+
     // Connect SessionManager's expiry callback to show dialog.
     Future.microtask(() {
       final session = ref.read(sessionManagerProvider);
@@ -39,43 +47,41 @@ class _HrMobileAppState extends ConsumerState<HrMobileApp> {
   @override
   Widget build(BuildContext context) {
     final router = ref.watch(routerProvider);
+    final locale = ref.watch(resolvedLocaleProvider);
+    final materialLocale = ref.watch(materialLocaleProvider);
+    final themeMode = ref.watch(themeModeProvider);
+
+    // Keep Jiffy locale aligned with app locale.
+    // Riverpod allows `ref.listen` only inside build. Since this widget already
+    // rebuilds when locale changes, we can safely sync Jiffy here.
+    if (_jiffyLocaleCode != locale.languageCode) {
+      _jiffyLocaleCode = locale.languageCode;
+      Jiffy.setLocale(_jiffyLocaleCode!);
+    }
 
     return MaterialApp.router(
       title: 'HR Mobile',
       debugShowCheckedModeBanner: false,
 
       localizationsDelegates: const [
+        AppLocalizations.delegate,
         GlobalMaterialLocalizations.delegate,
         GlobalWidgetsLocalizations.delegate,
         GlobalCupertinoLocalizations.delegate,
       ],
       supportedLocales: const [
-        Locale('ar'),
         Locale('en'),
+        Locale('ar'),
       ],
 
       // ── Theme ──
-      theme: ThemeData(
-        colorSchemeSeed: Colors.blue,
-        useMaterial3: true,
-        brightness: Brightness.light,
-        inputDecorationTheme: const InputDecorationTheme(
-          border: OutlineInputBorder(),
-          filled: true,
-        ),
-      ),
-      darkTheme: ThemeData(
-        colorSchemeSeed: Colors.blue,
-        useMaterial3: true,
-        brightness: Brightness.dark,
-        inputDecorationTheme: const InputDecorationTheme(
-          border: OutlineInputBorder(),
-          filled: true,
-        ),
-      ),
+      theme: AppTheme.light,
+      darkTheme: AppTheme.dark,
+      themeMode: themeMode,
 
-      // ── Locale (RTL Arabic) ──
-      locale: const Locale('ar'),
+      // ── Locale ──
+      // System → null (follow device), EN/AR → forced.
+      locale: materialLocale,
       // ── Router ──
       routerConfig: router,
     );

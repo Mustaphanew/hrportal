@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:hr_portal/features/leave/data/models/leave_models.dart';
+import 'package:hr_portal/core/localization/app_localizations.dart';
+import 'package:intl/intl.dart';
 
 import '../../../../shared/controllers/global_error_handler.dart';
 import '../../../../shared/widgets/shared_widgets.dart';
@@ -18,7 +21,7 @@ class CreateLeaveScreen extends ConsumerWidget {
     ref.listen<CreateLeaveFormState>(createLeaveFormProvider, (prev, next) {
       if (next.isSuccess && prev?.isSuccess != true) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('تم إرسال طلب الإجازة بنجاح')),
+          SnackBar(content: Text('Leave request sent successfully'.tr(context))),
         );
         context.pop();
       }
@@ -29,100 +32,123 @@ class CreateLeaveScreen extends ConsumerWidget {
     });
 
     return Scaffold(
-      appBar: AppBar(title: const Text('طلب إجازة')),
+      appBar: AppBar(title: Text('Request leave'.tr(context))),
       body: listState.isLoading
           ? const Center(child: LoadingIndicator())
           : listState.error != null
-              ? ErrorFullScreen(
-                  error: listState.error!,
-                  onRetry: () => ref.read(leavesListProvider.notifier).refresh(),
-                )
-              : ListView(
-                  padding: const EdgeInsets.all(16),
-                  children: [
-                    DropdownButtonFormField<int>(
-                      value: form.leaveTypeId,
-                      items: listState.leaveTypes
-                          .map(
-                            (t) => DropdownMenuItem<int>(
-                              value: t.id,
-                              child: Text(t.name),
-                            ),
-                          )
-                          .toList(),
-                      onChanged: (v) {
-                        if (v != null) notifier.setLeaveType(v);
-                      },
-                      decoration: InputDecoration(
-                        labelText: 'نوع الإجازة',
-                        errorText: form.fieldError('leave_type_id'),
+          ? ErrorFullScreen(
+              error: listState.error!,
+              onRetry: () => ref.read(leavesListProvider.notifier).refresh(),
+            )
+          : ListView(
+              padding: const EdgeInsets.all(16),
+              children: [
+                DropdownButtonFormField<int>(
+                  value: form.leaveTypeId,
+                  isExpanded: true,
+                  itemHeight: null, // يسمح بسطرين إذا احتاج
+                  items: listState.leaveTypes.map((t) {
+                    // ابحث عن الرصيد الموافق لنوع الإجازة
+                    LeaveBalance? bal;
+                    try {
+                      bal = listState.balances.firstWhere(
+                        (b) => (b.leaveType?.id ?? 0) == (t.id ?? 0),
+                      );
+                    } catch (_) {
+                      bal = null;
+                    }
+
+                    final nf = NumberFormat('0.0'); // يعطي 30.0 مثل الصورة
+                    final availableDays = bal?.available ?? 0.0;
+
+                    final meta = t.isPaid
+                        ? '${'Available'.tr(context)}: ${nf.format(availableDays)} ${'day'.tr(context)}'
+                        : 'Unpaid — no balance'.tr(context);
+
+                    return DropdownMenuItem<int>(
+                      value: t.id ?? 0,
+                      child: Text(
+                        '${t.name} ($meta)',
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
                       ),
-                    ),
-                    const SizedBox(height: 12),
-
-                    _DateField(
-                      label: 'تاريخ البداية',
-                      value: form.startDate,
-                      errorText: form.fieldError('start_date'),
-                      onPick: (date) => notifier.setStartDate(date),
-                    ),
-                    const SizedBox(height: 12),
-                    _DateField(
-                      label: 'تاريخ النهاية',
-                      value: form.endDate,
-                      errorText: form.fieldError('end_date'),
-                      onPick: (date) => notifier.setEndDate(date),
-                    ),
-                    const SizedBox(height: 12),
-
-                    DropdownButtonFormField<String>(
-                      value: form.dayPart,
-                      items: const [
-                        DropdownMenuItem(value: 'full', child: Text('يوم كامل')),
-                        DropdownMenuItem(
-                          value: 'first_half',
-                          child: Text('النصف الأول'),
-                        ),
-                        DropdownMenuItem(
-                          value: 'second_half',
-                          child: Text('النصف الثاني'),
-                        ),
-                      ],
-                      onChanged: (v) {
-                        if (v != null) notifier.setDayPart(v);
-                      },
-                      decoration: InputDecoration(
-                        labelText: 'المدة',
-                        errorText: form.fieldError('day_part'),
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-
-                    TextFormField(
-                      initialValue: form.reason,
-                      maxLines: 3,
-                      onChanged: notifier.setReason,
-                      decoration: InputDecoration(
-                        labelText: 'السبب (اختياري)',
-                        errorText: form.fieldError('reason'),
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-
-                    ElevatedButton(
-                      onPressed: form.canSubmit
-                          ? () => notifier.submit()
-                          : null,
-                      child: form.isLoading
-                          ? const SizedBox(
-                              height: 18,
-                              width: 18,
-                              child: CircularProgressIndicator(strokeWidth: 2),
-                            )
-                          : const Text('إرسال الطلب'),
-                    ),
-                  ],
+                    );
+                  }).toList(),
+                  onChanged: (v) {
+                    if (v != null) notifier.setLeaveType(v);
+                  },
+                  decoration: InputDecoration(
+                    labelText: 'Leave type'.tr(context),
+                    errorText: form.fieldError('leave_type_id'),
+                  ),
                 ),
+
+                const SizedBox(height: 12),
+
+                _DateField(
+                  label: 'Start date'.tr(context),
+                  value: form.startDate,
+                  errorText: form.fieldError('start_date'),
+                  onPick: (date) => notifier.setStartDate(date),
+                ),
+                const SizedBox(height: 12),
+                _DateField(
+                  label: 'End date'.tr(context),
+                  value: form.endDate,
+                  errorText: form.fieldError('end_date'),
+                  onPick: (date) => notifier.setEndDate(date),
+                ),
+                const SizedBox(height: 12),
+
+                DropdownButtonFormField<String>(
+                  value: form.dayPart,
+                  items: [
+                    DropdownMenuItem(
+                      value: 'full',
+                      child: Text('Full day'.tr(context)),
+                    ),
+                    // DropdownMenuItem(
+                    //   value: 'first_half',
+                    //   child: Text('النصف الأول'),
+                    // ),
+                    // DropdownMenuItem(
+                    //   value: 'second_half',
+                    //   child: Text('النصف الثاني'),
+                    // ),
+                  ],
+                  onChanged: (v) {
+                    if (v != null) notifier.setDayPart(v);
+                  },
+                  decoration: InputDecoration(
+                    labelText: 'Duration'.tr(context),
+                    errorText: form.fieldError('day_part'),
+                  ),
+                ),
+                const SizedBox(height: 12),
+
+                TextFormField(
+                  initialValue: form.reason,
+                  maxLines: 3,
+                  onChanged: notifier.setReason,
+                  decoration: InputDecoration(
+                    labelText: 'Reason (optional)'.tr(context),
+                    errorText: form.fieldError('reason'),
+                  ),
+                ),
+                const SizedBox(height: 20),
+
+                ElevatedButton(
+                  onPressed: form.canSubmit ? () => notifier.submit() : null,
+                  child: form.isLoading
+                      ? const SizedBox(
+                          height: 18,
+                          width: 18,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : Text('Submit request'.tr(context)),
+                ),
+              ],
+            ),
     );
   }
 }
@@ -153,7 +179,8 @@ class _DateField extends StatelessWidget {
         );
 
         if (picked != null) {
-          final d = '${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}';
+          final d =
+              '${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}';
           onPick(d);
         }
       },
@@ -166,9 +193,7 @@ class _DateField extends StatelessWidget {
         child: Row(
           children: [
             Expanded(
-              child: Text(
-                value.isEmpty ? 'اختر التاريخ' : value,
-              ),
+              child: Text(value.isEmpty ? 'Select date'.tr(context) : value),
             ),
             const Icon(Icons.calendar_today, size: 18),
           ],

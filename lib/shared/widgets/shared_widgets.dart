@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:hr_portal/core/localization/app_localizations.dart';
 
 import '../controllers/global_error_handler.dart';
 import '../controllers/paginated_controller.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 // ═══════════════════════════════════════════════════════════════════
 // Loading
@@ -40,8 +42,9 @@ class ErrorFullScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isOffline = error.action == ErrorAction.showFullScreen &&
-        error.title == 'لا يوجد اتصال';
+    final isOffline =
+        error.action == ErrorAction.showFullScreen &&
+        error.title == 'No connection';
 
     return Center(
       child: Padding(
@@ -56,13 +59,13 @@ class ErrorFullScreen extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             Text(
-              error.title,
+              error.title.tr(context),
               style: Theme.of(context).textTheme.titleLarge,
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 8),
             Text(
-              error.message,
+              error.message.tr(context),
               style: Theme.of(context).textTheme.bodyMedium,
               textAlign: TextAlign.center,
             ),
@@ -70,9 +73,9 @@ class ErrorFullScreen extends StatelessWidget {
               const SizedBox(height: 4),
               Text(
                 'Trace: ${error.traceId}',
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: Colors.grey,
-                    ),
+                style: Theme.of(
+                  context,
+                ).textTheme.bodySmall?.copyWith(color: Colors.grey),
               ),
             ],
             if (onRetry != null) ...[
@@ -80,7 +83,7 @@ class ErrorFullScreen extends StatelessWidget {
               FilledButton.icon(
                 onPressed: onRetry,
                 icon: const Icon(Icons.refresh),
-                label: const Text('إعادة المحاولة'),
+                label: Text('Retry'.tr(context)),
               ),
             ],
           ],
@@ -99,12 +102,7 @@ class EmptyState extends StatelessWidget {
   final String title;
   final String? subtitle;
 
-  const EmptyState({
-    super.key,
-    this.icon,
-    required this.title,
-    this.subtitle,
-  });
+  const EmptyState({super.key, this.icon, required this.title, this.subtitle});
 
   @override
   Widget build(BuildContext context) {
@@ -125,9 +123,9 @@ class EmptyState extends StatelessWidget {
               const SizedBox(height: 8),
               Text(
                 subtitle!,
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: Colors.grey,
-                    ),
+                style: Theme.of(
+                  context,
+                ).textTheme.bodyMedium?.copyWith(color: Colors.grey),
                 textAlign: TextAlign.center,
               ),
             ],
@@ -228,7 +226,9 @@ class _PaginatedListViewState<T> extends State<PaginatedListView<T>> {
     }
 
     final itemCount =
-        s.items.length + (widget.header != null ? 1 : 0) + (s.isLoadingMore ? 1 : 0);
+        s.items.length +
+        (widget.header != null ? 1 : 0) +
+        (s.isLoadingMore ? 1 : 0);
 
     return RefreshIndicator(
       onRefresh: widget.onRefresh,
@@ -278,16 +278,76 @@ class SessionExpiredDialog extends StatelessWidget {
   Widget build(BuildContext context) {
     return AlertDialog(
       icon: const Icon(Icons.lock_clock, size: 48),
-      title: const Text('انتهت الجلسة'),
-      content: const Text(
-        'انتهت صلاحية جلستك. يرجى تسجيل الدخول مرة أخرى.',
-      ),
+      title: Text('Session expired'.tr(context)),
+      content: Text('Your session has expired. Please sign in again.'.tr(context)),
       actions: [
         FilledButton(
           onPressed: () => Navigator.of(context).pop(),
-          child: const Text('تسجيل الدخول'),
+          child: Text('Sign in'.tr(context)),
         ),
       ],
+    );
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// Cached Network Image
+// ═══════════════════════════════════════════════════════════════════
+
+class CacheImg extends StatelessWidget {
+  final String url;
+  final BoxFit? boxFit;
+  final double? imgWidth;
+  final double sizeCircleLoading;
+  const CacheImg({
+    super.key,
+    required this.url,
+    this.boxFit,
+    this.imgWidth,
+    this.sizeCircleLoading = 40,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    String imageUrl = "";
+
+    if (url.trim().isEmpty) {
+      imageUrl = "";
+    } else if (url.startsWith("http")) {
+      imageUrl = url;
+    } else {
+      imageUrl = "https://$url";
+    }
+
+    return CachedNetworkImage(
+      imageUrl: imageUrl,
+      fit: boxFit,
+      width: imgWidth,
+      placeholder: (context, url) {
+        return Container(
+          padding: EdgeInsets.all(4),
+          // height: sizeCircleLoading + 10.0,
+          // width: sizeCircleLoading + 10.0,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              SizedBox(
+                height: sizeCircleLoading,
+                width: sizeCircleLoading,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              ),
+            ],
+          ),
+        );
+      },
+      errorWidget: (context, url, error) {
+        return Icon(
+          Icons.error_outline,
+          size: sizeCircleLoading,
+          color: Colors.grey[500],
+        );
+      },
     );
   }
 }

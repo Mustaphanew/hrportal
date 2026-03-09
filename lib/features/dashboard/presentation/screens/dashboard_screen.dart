@@ -2,6 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hr_portal/core/providers/core_providers.dart';
+import 'package:hr_portal/core/localization/app_localizations.dart';
+import 'package:hr_portal/core/localization/locale_provider.dart';
+import 'package:hr_portal/core/theme/theme_mode_provider.dart';
+import 'package:hr_portal/features/profile/data/models/employee_profile_model.dart';
 
 import '../../../../shared/widgets/shared_widgets.dart';
 import '../../../../shared/controllers/global_error_handler.dart';
@@ -15,14 +19,67 @@ class DashboardScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final auth = ref.watch(authProvider);
     final profileAsync = ref.watch(profileProvider);
+    final themeMode = ref.watch(themeModeProvider);
+    final localeMode = ref.watch(localeModeProvider);
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('الرئيسية'),
+        title: Text('Home'.tr(context)),
         actions: [
+
+          PopupMenuButton<ThemeMode>(
+            tooltip: 'Theme'.tr(context),
+            position: PopupMenuPosition.under,
+            icon: const Icon(Icons.brightness_6_outlined),
+            initialValue: themeMode,
+            onSelected: (m) =>
+                ref.read(themeModeProvider.notifier).setThemeMode(m),
+            itemBuilder: (ctx) => [
+              PopupMenuItem(
+                value: ThemeMode.system,
+                child: Text('System'.tr(context)),
+              ),
+              PopupMenuItem(
+                value: ThemeMode.light,
+                child: Text('Light'.tr(context)),
+              ),
+              PopupMenuItem(
+                value: ThemeMode.dark,
+                child: Text('Dark'.tr(context)),
+              ),
+            ],
+          ),
+          PopupMenuButton<AppLocaleMode>(
+            tooltip: 'Language'.tr(context),
+            position: PopupMenuPosition.under,
+            icon: const Icon(Icons.language),
+            initialValue: localeMode,
+            onSelected: (m) =>
+                ref.read(localeModeProvider.notifier).setMode(m),
+            itemBuilder: (ctx) => [
+              PopupMenuItem(
+                value: AppLocaleMode.system,
+                child: Text('System'.tr(context)),
+              ),
+              PopupMenuItem(
+                value: AppLocaleMode.en,
+                child: Text('English'.tr(context)),
+              ),
+              PopupMenuItem(
+                value: AppLocaleMode.ar,
+                child: Text('Arabic'.tr(context)),
+              ),
+            ],
+          ),
+          
+          IconButton(
+            icon: const Icon(Icons.notifications_outlined),
+            tooltip: 'Notifications'.tr(context),
+            onPressed: () => context.push('/notifications'),
+          ),
           IconButton(
             icon: const Icon(Icons.logout),
-            tooltip: 'تسجيل الخروج',
+            tooltip: 'Logout'.tr(context),
             onPressed: () => _showLogoutDialog(context, ref),
           ),
         ],
@@ -38,15 +95,10 @@ class DashboardScreen extends ConsumerWidget {
             // ── Profile Card ──
             profileAsync.when(
               data: (profile) => _ProfileCard(
-                name: profile.name,
-                jobTitle: profile.jobTitle ?? '',
-                department: profile.department?.name ?? '',
-                initials: profile.initials,
+                profile: profile,
               ),
-              loading: () => const SizedBox(
-                height: 100,
-                child: LoadingIndicator(),
-              ),
+              loading: () =>
+                  const SizedBox(height: 100, child: LoadingIndicator()),
               error: (e, _) => _ErrorCard(
                 error: GlobalErrorHandler.handle(e),
                 onRetry: () => ref.invalidate(profileProvider),
@@ -55,26 +107,29 @@ class DashboardScreen extends ConsumerWidget {
             const SizedBox(height: 16),
 
             // ── Quick Actions ──
-            Text('الإجراءات السريعة',
-                style: Theme.of(context).textTheme.titleMedium),
+            Text(
+              'Quick actions'.tr(context),
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
             const SizedBox(height: 8),
             _QuickActionsGrid(),
             const SizedBox(height: 24),
 
             // ── Attendance Summary ──
-            Text('ملخص الحضور — الشهر الحالي',
-                style: Theme.of(context).textTheme.titleMedium),
+            Text(
+              'Attendance summary — current month'.tr(context),
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
             const SizedBox(height: 8),
-            ref.watch(dashboardAttendanceProvider).when(
+            ref
+                .watch(dashboardAttendanceProvider)
+                .when(
                   data: (summary) => _AttendanceSummaryCard(summary: summary),
-                  loading: () => const SizedBox(
-                    height: 80,
-                    child: LoadingIndicator(),
-                  ),
+                  loading: () =>
+                      const SizedBox(height: 80, child: LoadingIndicator()),
                   error: (e, _) => _ErrorCard(
                     error: GlobalErrorHandler.handle(e),
-                    onRetry: () =>
-                        ref.invalidate(dashboardAttendanceProvider),
+                    onRetry: () => ref.invalidate(dashboardAttendanceProvider),
                   ),
                 ),
           ],
@@ -86,31 +141,38 @@ class DashboardScreen extends ConsumerWidget {
   void _showLogoutDialog(BuildContext context, WidgetRef ref) {
     showDialog(
       context: context,
-      builder: (_) => AlertDialog(
-        title: const Text('تسجيل الخروج'),
-        content: const Text('هل تريد تسجيل الخروج من هذا الجهاز؟'),
+      builder: (BuildContext dCtx) => AlertDialog(
+        title: Text('Logout'.tr(context)),
+        content: Text('Do you want to log out from this device?'.tr(context)),
         actions: [
           TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('إلغاء'),
+            onPressed: () {
+              Navigator.of(dCtx).pop();
+            },
+            child: Text('Cancel'.tr(context)),
           ),
           TextButton(
+            style: TextButton.styleFrom(
+              foregroundColor: Theme.of(context).colorScheme.onError,
+              backgroundColor: Theme.of(context).colorScheme.error,
+            ),
             onPressed: () async {
-              Navigator.of(context).pop();
+              Navigator.of(dCtx).pop();
               try {
                 final auth = ref.read(authRepositoryProvider);
                 await auth.logout();
                 ref.read(authProvider.notifier).onLogout();
               } catch (e) {
-                if (context.mounted) {
+                if (dCtx.mounted) {
                   GlobalErrorHandler.show(
-                      context, GlobalErrorHandler.handle(e));
+                    dCtx,
+                    GlobalErrorHandler.handle(e),
+                  );
                 }
               }
             },
             child: Text(
-              'خروج',
-              style: TextStyle(color: Theme.of(context).colorScheme.error),
+              'Sign out'.tr(context),
             ),
           ),
         ],
@@ -122,17 +184,22 @@ class DashboardScreen extends ConsumerWidget {
 // ── Private Widgets ──────────────────────────────────────────────────
 
 class _ProfileCard extends StatelessWidget {
-  final String name;
-  final String jobTitle;
-  final String department;
-  final String initials;
+  final EmployeeProfile profile;
 
   const _ProfileCard({
-    required this.name,
-    required this.jobTitle,
-    required this.department,
-    required this.initials,
+    required this.profile,
   });
+
+  String _getGreeting(BuildContext context) {
+    final now = DateTime.now();
+    if (now.hour < 12) {
+      return 'Good morning'.tr(context);
+    } else if (now.hour < 18) {
+      return 'Good afternoon'.tr(context);
+    } else {
+      return 'Good evening'.tr(context);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -140,27 +207,43 @@ class _ProfileCard extends StatelessWidget {
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Row(
-          children: [
-            CircleAvatar(
-              radius: 28,
-              child: Text(initials,
-                  style: const TextStyle(fontSize: 18)),
-            ),
+          children: [ 
+            if (profile.photoUrl != null)
+              ClipRRect(
+                borderRadius: BorderRadius.circular(8),
+                child: CacheImg(url: profile.photoUrl!, imgWidth: 58),
+              )
+            else
+              CircleAvatar(
+                radius: 28,
+                child: Text(profile.initials, style: const TextStyle(fontSize: 18)),
+              ),
             const SizedBox(width: 16),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(name,
-                      style: Theme.of(context).textTheme.titleMedium),
-                  if (jobTitle.isNotEmpty)
-                    Text(jobTitle,
-                        style: Theme.of(context).textTheme.bodyMedium),
-                  if (department.isNotEmpty)
-                    Text(department,
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: Colors.grey,
-                            )),
+                  Text(
+                    "${_getGreeting(context)} 👋",
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: Theme.of(context).colorScheme.primary,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                    ),
+                  ),
+                  Text(profile.name, style: Theme.of(context).textTheme.titleMedium),
+                  if (profile.jobTitle != null)
+                    Text(
+                      profile.jobTitle!,
+                      style: Theme.of(context).textTheme.bodyMedium,
+                    ),
+                  // if (profile.department != null && profile.department?.name != null)
+                  //   Text(
+                  //     profile.department!.name,
+                  //     style: Theme.of(
+                  //       context,
+                  //     ).textTheme.bodySmall?.copyWith(color: Colors.grey),
+                  //   ),
                 ],
               ),
             ),
@@ -184,22 +267,22 @@ class _QuickActionsGrid extends StatelessWidget {
       children: [
         _ActionTile(
           icon: Icons.fingerprint,
-          label: 'الحضور',
+          label: 'Attendance',
           onTap: () => context.go('/attendance'),
         ),
         _ActionTile(
           icon: Icons.beach_access,
-          label: 'الإجازات',
+          label: 'Leaves',
           onTap: () => context.go('/leaves'),
         ),
         _ActionTile(
           icon: Icons.receipt_long,
-          label: 'الرواتب',
+          label: 'Payroll',
           onTap: () => context.go('/payroll'),
         ),
         _ActionTile(
           icon: Icons.description,
-          label: 'الطلبات',
+          label: 'Requests',
           onTap: () => context.go('/requests'),
         ),
       ],
@@ -230,7 +313,8 @@ class _ActionTile extends StatelessWidget {
             children: [
               Icon(icon, color: Theme.of(context).colorScheme.primary),
               const SizedBox(width: 12),
-              Text(label, style: Theme.of(context).textTheme.bodyLarge),
+              Text(label.tr(context),
+                  style: Theme.of(context).textTheme.bodyLarge),
             ],
           ),
         ),
@@ -251,10 +335,22 @@ class _AttendanceSummaryCard extends StatelessWidget {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
-            _SummaryStat(label: 'حضور', value: '${summary.presentDays}'),
-            _SummaryStat(label: 'غياب', value: '${summary.absentDays}'),
-            _SummaryStat(label: 'تأخير', value: '${summary.lateDays}'),
-            _SummaryStat(label: 'إجازة', value: '${summary.leaveDays}'),
+            _SummaryStat(
+              label: 'Present'.tr(context),
+              value: '${summary.presentDays}',
+            ),
+            _SummaryStat(
+              label: 'Absent'.tr(context),
+              value: '${summary.absentDays}',
+            ),
+            _SummaryStat(
+              label: 'Late'.tr(context),
+              value: '${summary.lateDays}',
+            ),
+            _SummaryStat(
+              label: 'Leave'.tr(context),
+              value: '${summary.leaveDays}',
+            ),
           ],
         ),
       ),
@@ -272,11 +368,12 @@ class _SummaryStat extends StatelessWidget {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Text(value,
-            style: Theme.of(context)
-                .textTheme
-                .headlineSmall
-                ?.copyWith(fontWeight: FontWeight.bold)),
+        Text(
+          value,
+          style: Theme.of(
+            context,
+          ).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
+        ),
         Text(label, style: Theme.of(context).textTheme.bodySmall),
       ],
     );
@@ -298,8 +395,11 @@ class _ErrorCard extends StatelessWidget {
           children: [
             const Icon(Icons.error_outline),
             const SizedBox(width: 8),
-            Expanded(child: Text(error.message)),
-            TextButton(onPressed: onRetry, child: const Text('إعادة')),
+            Expanded(child: Text(error.message.tr(context))),
+            TextButton(
+              onPressed: onRetry,
+              child: Text('Retry'.tr(context)),
+            ),
           ],
         ),
       ),

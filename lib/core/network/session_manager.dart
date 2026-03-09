@@ -65,7 +65,7 @@ class SessionManager {
     await _storage.clearAll();
     _isAuthenticated = false;
     _authStateController.add(false);
-    onSessionExpired?.call('انتهت الجلسة. يرجى تسجيل الدخول مرة أخرى.');
+    onSessionExpired?.call('Your session has expired. Please sign in again.');
   }
 
   /// Check if user has a stored token on app startup.

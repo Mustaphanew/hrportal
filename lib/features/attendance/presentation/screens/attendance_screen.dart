@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hr_portal/core/localization/app_localizations.dart';
 
 import '../../../../shared/controllers/global_error_handler.dart';
 import '../../../../shared/widgets/shared_widgets.dart';
@@ -22,7 +23,9 @@ class AttendanceScreen extends ConsumerWidget {
       // Success: show a simple snackbar.
       if (next.record != null && (prev?.record?.id != next.record!.id)) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('تم تحديث سجل الحضور بنجاح')),
+          SnackBar(
+            content: Text('Attendance record updated successfully'.tr(context)),
+          ),
         );
       }
     });
@@ -35,7 +38,7 @@ class AttendanceScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('الحضور'),
+        title: Text('Attendance'.tr(context)),
       ),
       body: Column(
         children: [
@@ -49,7 +52,7 @@ class AttendanceScreen extends ConsumerWidget {
                         ? null
                         : () => ref.read(checkActionProvider.notifier).checkIn(),
                     icon: const Icon(Icons.login),
-                    label: const Text('تسجيل حضور'),
+                    label: Text('Check in'.tr(context)),
                   ),
                 ),
                 const SizedBox(width: 12),
@@ -59,7 +62,7 @@ class AttendanceScreen extends ConsumerWidget {
                         ? null
                         : () => ref.read(checkActionProvider.notifier).checkOut(),
                     icon: const Icon(Icons.logout),
-                    label: const Text('تسجيل انصراف'),
+                    label: Text('Check out'.tr(context)),
                   ),
                 ),
               ],
@@ -109,10 +112,10 @@ class _SummaryCard extends StatelessWidget {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
-            _Stat(label: 'حضور', value: '${summary.presentDays}'),
-            _Stat(label: 'غياب', value: '${summary.absentDays}'),
-            _Stat(label: 'تأخير', value: '${summary.lateDays}'),
-            _Stat(label: 'إجازة', value: '${summary.leaveDays}'),
+            _Stat(label: 'Present'.tr(context), value: '${summary.presentDays}'),
+            _Stat(label: 'Absent'.tr(context), value: '${summary.absentDays}'),
+            _Stat(label: 'Late'.tr(context), value: '${summary.lateDays}'),
+            _Stat(label: 'Leave'.tr(context), value: '${summary.leaveDays}'),
           ],
         ),
       ),
@@ -155,9 +158,9 @@ class _RecordTile extends StatelessWidget {
       ),
       title: Text(record.date),
       subtitle: Text(
-        'حالة: ${record.status}'
-        '${record.checkInTime != null ? ' • دخول: ${record.checkInTime}' : ''}'
-        '${record.checkOutTime != null ? ' • خروج: ${record.checkOutTime}' : ''}',
+        '${'Status'.tr(context)}: ${record.status}'
+        '${record.checkInTime != null ? ' • ${'In'.tr(context)}: ${record.checkInTime}' : ''}'
+        '${record.checkOutTime != null ? ' • ${'Out'.tr(context)}: ${record.checkOutTime}' : ''}',
       ),
       trailing: record.isComplete ? const Icon(Icons.done) : null,
     );

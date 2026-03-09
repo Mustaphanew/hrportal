@@ -2,6 +2,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:hr_portal/features/notifications/presentation/screens/notifications_screen.dart';
+import 'package:hr_portal/core/localization/app_localizations.dart';
 
 import '../features/auth/presentation/providers/auth_providers.dart';
 import '../features/auth/presentation/screens/splash_screen.dart';
@@ -55,24 +57,15 @@ final routerProvider = Provider<GoRouter>((ref) {
 
     routes: [
       // ── Auth ──
-      GoRoute(
-        path: '/splash',
-        builder: (_, __) => const SplashScreen(),
-      ),
-      GoRoute(
-        path: '/login',
-        builder: (_, __) => const LoginScreen(),
-      ),
+      GoRoute(path: '/splash', builder: (_, __) => const SplashScreen()),
+      GoRoute(path: '/login', builder: (_, __) => const LoginScreen()),
 
       // ── Main App (with bottom nav shell) ──
       ShellRoute(
         builder: (context, state, child) =>
             _MainShell(state: state, child: child),
         routes: [
-          GoRoute(
-            path: '/',
-            builder: (_, __) => const DashboardScreen(),
-          ),
+          GoRoute(path: '/', builder: (_, __) => const DashboardScreen()),
           GoRoute(
             path: '/attendance',
             builder: (_, __) => const AttendanceScreen(),
@@ -93,9 +86,8 @@ final routerProvider = Provider<GoRouter>((ref) {
             routes: [
               GoRoute(
                 path: ':month',
-                builder: (_, state) => PayslipDetailScreen(
-                  month: state.pathParameters['month']!,
-                ),
+                builder: (_, state) =>
+                    PayslipDetailScreen(month: state.pathParameters['month']!),
               ),
             ],
           ),
@@ -108,6 +100,11 @@ final routerProvider = Provider<GoRouter>((ref) {
                 builder: (_, __) => const CreateRequestScreen(),
               ),
             ],
+          ),
+
+          GoRoute(
+            path: '/notifications',
+            builder: (_, __) => const NotificationsScreen(),
           ),
         ],
       ),
@@ -159,31 +156,31 @@ class _MainShell extends StatelessWidget {
               break;
           }
         },
-        destinations: const [
+        destinations: [
           NavigationDestination(
-            icon: Icon(Icons.home_outlined),
-            selectedIcon: Icon(Icons.home),
-            label: 'الرئيسية',
+            icon: const Icon(Icons.home_outlined),
+            selectedIcon: const Icon(Icons.home),
+            label: 'Home'.tr(context),
           ),
           NavigationDestination(
-            icon: Icon(Icons.fingerprint_outlined),
-            selectedIcon: Icon(Icons.fingerprint),
-            label: 'الحضور',
+            icon: const Icon(Icons.fingerprint_outlined),
+            selectedIcon: const Icon(Icons.fingerprint),
+            label: 'Attendance'.tr(context),
           ),
           NavigationDestination(
-            icon: Icon(Icons.beach_access_outlined),
-            selectedIcon: Icon(Icons.beach_access),
-            label: 'الإجازات',
+            icon: const Icon(Icons.beach_access_outlined),
+            selectedIcon: const Icon(Icons.beach_access),
+            label: 'Leaves'.tr(context),
           ),
           NavigationDestination(
-            icon: Icon(Icons.receipt_long_outlined),
-            selectedIcon: Icon(Icons.receipt_long),
-            label: 'الرواتب',
+            icon: const Icon(Icons.receipt_long_outlined),
+            selectedIcon: const Icon(Icons.receipt_long),
+            label: 'Payroll'.tr(context),
           ),
           NavigationDestination(
-            icon: Icon(Icons.description_outlined),
-            selectedIcon: Icon(Icons.description),
-            label: 'الطلبات',
+            icon: const Icon(Icons.description_outlined),
+            selectedIcon: const Icon(Icons.description),
+            label: 'Requests'.tr(context),
           ),
         ],
       ),
