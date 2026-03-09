@@ -124,8 +124,8 @@
       window.addEventListener("load", async function () {
         try {
           const registration = await navigator.serviceWorker.register(
-            "firebase-messaging-sw.js",
-            { scope: "/firebase-cloud-messaging-push-scope" }
+            "./firebase-messaging-sw.js",
+            { scope: "./firebase-cloud-messaging-push-scope" }
           );
           console.log(
             "Firebase Messaging Service Worker registered:",
