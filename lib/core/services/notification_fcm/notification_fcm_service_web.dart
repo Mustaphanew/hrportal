@@ -19,6 +19,7 @@ class NotificationFCMService {
   bool _inited = false;
 
   Future<void> initFCM() async {
+    print('initFCM(web)');
     if (_inited) return;
     _inited = true;
 

@@ -91,7 +91,9 @@ void main() async {
   }
   await AwesomeNotificationService.init();
   final fcmService = NotificationFCMService();
+  print('main: before initFCM');
   await fcmService.initFCM();
+  print('main: after initFCM');
 
   // ── 1. Resolve environment from --dart-define=FLAVOR ──
   appConfig = AppConfig.fromEnvironment();
