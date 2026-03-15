@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hr_portal/features/leave/data/models/leave_models.dart';
 import 'package:hr_portal/core/localization/app_localizations.dart';
+import 'package:hr_portal/core/theme/app_spacing.dart';
+import 'package:hr_portal/shared/widgets/app_components.dart';
 import 'package:intl/intl.dart';
 
 import '../../../../shared/controllers/global_error_handler.dart';
@@ -41,7 +43,7 @@ class CreateLeaveScreen extends ConsumerWidget {
               onRetry: () => ref.read(leavesListProvider.notifier).refresh(),
             )
           : ListView(
-              padding: const EdgeInsets.all(16),
+              padding: AppSpacing.paddingAllMd,
               children: [
                 DropdownButtonFormField<int>(
                   value: form.leaveTypeId,
@@ -83,7 +85,7 @@ class CreateLeaveScreen extends ConsumerWidget {
                   ),
                 ),
 
-                const SizedBox(height: 12),
+                AppSpacing.verticalMd,
 
                 _DateField(
                   label: 'Start date'.tr(context),
@@ -91,14 +93,14 @@ class CreateLeaveScreen extends ConsumerWidget {
                   errorText: form.fieldError('start_date'),
                   onPick: (date) => notifier.setStartDate(date),
                 ),
-                const SizedBox(height: 12),
+                AppSpacing.verticalMd,
                 _DateField(
                   label: 'End date'.tr(context),
                   value: form.endDate,
                   errorText: form.fieldError('end_date'),
                   onPick: (date) => notifier.setEndDate(date),
                 ),
-                const SizedBox(height: 12),
+                AppSpacing.verticalMd,
 
                 DropdownButtonFormField<String>(
                   value: form.dayPart,
@@ -107,14 +109,6 @@ class CreateLeaveScreen extends ConsumerWidget {
                       value: 'full',
                       child: Text('Full day'.tr(context)),
                     ),
-                    // DropdownMenuItem(
-                    //   value: 'first_half',
-                    //   child: Text('النصف الأول'),
-                    // ),
-                    // DropdownMenuItem(
-                    //   value: 'second_half',
-                    //   child: Text('النصف الثاني'),
-                    // ),
                   ],
                   onChanged: (v) {
                     if (v != null) notifier.setDayPart(v);
@@ -124,7 +118,7 @@ class CreateLeaveScreen extends ConsumerWidget {
                     errorText: form.fieldError('day_part'),
                   ),
                 ),
-                const SizedBox(height: 12),
+                AppSpacing.verticalMd,
 
                 TextFormField(
                   initialValue: form.reason,
@@ -135,17 +129,13 @@ class CreateLeaveScreen extends ConsumerWidget {
                     errorText: form.fieldError('reason'),
                   ),
                 ),
-                const SizedBox(height: 20),
+                AppSpacing.verticalLg,
 
-                ElevatedButton(
-                  onPressed: form.canSubmit ? () => notifier.submit() : null,
-                  child: form.isLoading
-                      ? const SizedBox(
-                          height: 18,
-                          width: 18,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        )
-                      : Text('Submit request'.tr(context)),
+                AppLoadingButton(
+                  isLoading: form.isLoading,
+                  enabled: form.canSubmit,
+                  onPressed: () => notifier.submit(),
+                  label: 'Submit request'.tr(context),
                 ),
               ],
             ),
@@ -188,7 +178,6 @@ class _DateField extends StatelessWidget {
         decoration: InputDecoration(
           labelText: label,
           errorText: errorText,
-          border: const OutlineInputBorder(),
         ),
         child: Row(
           children: [

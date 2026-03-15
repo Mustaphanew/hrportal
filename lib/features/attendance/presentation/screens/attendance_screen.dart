@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hr_portal/core/localization/app_localizations.dart';
+import 'package:hr_portal/core/theme/app_spacing.dart';
 
 import '../../../../shared/controllers/global_error_handler.dart';
 import '../../../../shared/widgets/shared_widgets.dart';
@@ -43,11 +44,11 @@ class AttendanceScreen extends ConsumerWidget {
       body: Column(
         children: [
           Padding(
-            padding: const EdgeInsets.all(16),
+            padding: AppSpacing.paddingAllMd,
             child: Row(
               children: [
                 Expanded(
-                  child: ElevatedButton.icon(
+                  child: FilledButton.icon(
                     onPressed: checkAction.isLoading
                         ? null
                         : () => ref.read(checkActionProvider.notifier).checkIn(),
@@ -55,9 +56,9 @@ class AttendanceScreen extends ConsumerWidget {
                     label: Text('Check in'.tr(context)),
                   ),
                 ),
-                const SizedBox(width: 12),
+                AppSpacing.horizontalMd,
                 Expanded(
-                  child: ElevatedButton.icon(
+                  child: OutlinedButton.icon(
                     onPressed: checkAction.isLoading
                         ? null
                         : () => ref.read(checkActionProvider.notifier).checkOut(),
@@ -77,11 +78,11 @@ class AttendanceScreen extends ConsumerWidget {
 
           if (summary != null)
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
+              padding: AppSpacing.paddingHorizontalMd,
               child: _SummaryCard(summary: summary),
             ),
 
-          const SizedBox(height: 8),
+          AppSpacing.verticalSm,
 
           Expanded(
             child: PaginatedListView<AttendanceRecord>(
@@ -108,7 +109,7 @@ class _SummaryCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Card(
       child: Padding(
-        padding: const EdgeInsets.all(12),
+        padding: AppSpacing.paddingAllMd,
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
@@ -150,19 +151,27 @@ class _RecordTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ListTile(
-      leading: Icon(
-        record.status == 'present'
-            ? Icons.check_circle_outline
-            : Icons.remove_circle_outline,
+    return Card(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
+      child: ListTile(
+        leading: Icon(
+          record.status == 'present'
+              ? Icons.check_circle_outline
+              : Icons.remove_circle_outline,
+          color: record.status == 'present'
+              ? Colors.green
+              : Theme.of(context).colorScheme.error,
+        ),
+        title: Text(record.date),
+        subtitle: Text(
+          '${'Status'.tr(context)}: ${record.status}'
+          '${record.checkInTime != null ? ' • ${'In'.tr(context)}: ${record.checkInTime}' : ''}'
+          '${record.checkOutTime != null ? ' • ${'Out'.tr(context)}: ${record.checkOutTime}' : ''}',
+          overflow: TextOverflow.ellipsis,
+          maxLines: 2,
+        ),
+        trailing: record.isComplete ? const Icon(Icons.done) : null,
       ),
-      title: Text(record.date),
-      subtitle: Text(
-        '${'Status'.tr(context)}: ${record.status}'
-        '${record.checkInTime != null ? ' • ${'In'.tr(context)}: ${record.checkInTime}' : ''}'
-        '${record.checkOutTime != null ? ' • ${'Out'.tr(context)}: ${record.checkOutTime}' : ''}',
-      ),
-      trailing: record.isComplete ? const Icon(Icons.done) : null,
     );
   }
 }

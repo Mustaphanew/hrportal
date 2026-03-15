@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hr_portal/core/localization/app_localizations.dart';
+import 'package:hr_portal/core/theme/app_spacing.dart';
 import 'package:hr_portal/core/utils/app_funs.dart';
 import 'package:hr_portal/shared/widgets/shared_widgets.dart';
 import '../providers/notifications_providers.dart';
@@ -49,12 +50,6 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
     }
   }
 
-  // String _formatDate(BuildContext context, DateTime dt) {
-  //   final lang = Localizations.localeOf(context).languageCode;
-  //   final df = DateFormat('d-MMMM-yyyy | h:mm a', lang);
-  //   return df.format(dt);
-  // }
-
   Future<void> _confirmClearAll(BuildContext context) async {
     final ok = await showDialog<bool>(
       context: context,
@@ -84,15 +79,14 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
     final state = ref.watch(notificationsProvider);
     final notifier = ref.read(notificationsProvider.notifier);
 
-    return WillPopScope(
-      onWillPop: () async {
-        if (state.isSearchMode) {
+    return PopScope(
+      canPop: !state.isSearchMode,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop) {
           _searchCtrl.clear();
           notifier.closeSearch();
           FocusScope.of(context).unfocus();
-          return false;
         }
-        return true;
       },
       child: Scaffold(
         appBar: state.isSearchMode
@@ -338,13 +332,11 @@ class _NormalAppBar extends StatelessWidget implements PreferredSizeWidget {
 
     return AppBar(
       elevation: 0,
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       centerTitle: false,
-      titleSpacing: 0,
       title: Row(
         children: [
           Text('Notifications'.tr(context)),
-          const SizedBox(width: 8),
+          AppSpacing.horizontalSm,
           if (unreadCount > 0)
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
@@ -368,7 +360,7 @@ class _NormalAppBar extends StatelessWidget implements PreferredSizeWidget {
           onPressed: onClearAll,
           icon: const Icon(Icons.delete_sweep_outlined),
         ),
-        const SizedBox(width: 8),
+        AppSpacing.horizontalSm,
       ],
     );
   }
@@ -427,7 +419,7 @@ class _SearchAppBar extends StatelessWidget implements PreferredSizeWidget {
     return SafeArea(
       bottom: false,
       child: Padding(
-        padding: const EdgeInsetsDirectional.fromSTEB(12, 8, 12, 8),
+        padding: const EdgeInsetsDirectional.fromSTEB(16, 8, 16, 8),
         child: TextField(
           controller: controller,
           autofocus: true,
@@ -491,7 +483,7 @@ class _NotificationTile extends StatelessWidget {
       child: InkWell(
         onTap: onTap,
         child: Container(
-          padding: const EdgeInsetsDirectional.symmetric(horizontal: 8, vertical: 8),
+          padding: const EdgeInsets.all(8),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
@@ -502,7 +494,7 @@ class _NotificationTile extends StatelessWidget {
                 )
               else
                 _CircleTypeIcon(isRead: isRead),
-              const SizedBox(width: 12),
+              AppSpacing.horizontalMd,
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -522,14 +514,14 @@ class _NotificationTile extends StatelessWidget {
                         ],
                       ],
                     ),
-                    const SizedBox(height: 6),
+                    AppSpacing.verticalSm,
                     Text(bodyText, style: bodyStyle, maxLines: 3, overflow: TextOverflow.ellipsis),
-                    const SizedBox(height: 10),
+                    AppSpacing.verticalSm,
                     Text(dateText, style: dateStyle),
                   ],
                 ),
               ),
-              const SizedBox(width: 12),
+              AppSpacing.horizontalMd,
               if (showActionIcon)
                 Padding(
                   padding: const EdgeInsetsDirectional.only(top: 44),
@@ -585,18 +577,18 @@ class _EmptyNotificationsView extends StatelessWidget {
   Widget build(BuildContext context) {
     return Center(
       child: Padding(
-        padding: const EdgeInsetsDirectional.fromSTEB(24, 0, 24, 0),
+        padding: AppSpacing.paddingHorizontalLg,
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(Icons.notifications_none_rounded, size: 56, color: Theme.of(context).iconTheme.color),
-            const SizedBox(height: 10),
+            AppSpacing.verticalMd,
             Text(
               title,
               style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700),
               textAlign: TextAlign.center,
             ),
-            const SizedBox(height: 8),
+            AppSpacing.verticalSm,
             Text(subtitle, style: Theme.of(context).textTheme.bodyMedium, textAlign: TextAlign.center),
           ],
         ),

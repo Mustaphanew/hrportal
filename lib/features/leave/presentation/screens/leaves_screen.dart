@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hr_portal/core/localization/app_localizations.dart';
+import 'package:hr_portal/core/theme/app_spacing.dart';
+import 'package:hr_portal/shared/widgets/app_components.dart';
 
 import '../../../../shared/widgets/shared_widgets.dart';
 import '../providers/leave_providers.dart';
@@ -34,15 +36,9 @@ class LeavesScreen extends ConsumerWidget {
           : RefreshIndicator(
               onRefresh: () => ref.read(leavesListProvider.notifier).refresh(),
               child: ListView(
-                padding: const EdgeInsets.all(16),
+                padding: AppSpacing.paddingAllMd,
                 children: [
-                  Text(
-                    'Balance'.tr(context),
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
+                  SectionHeader(title: 'Balance'.tr(context)),
                   if (state.balances.isEmpty)
                     EmptyState(
                       icon: Icons.emoji_events,
@@ -62,9 +58,13 @@ class LeavesScreen extends ConsumerWidget {
                             children: [
                               Text(
                                 '${'Available'.tr(context)}: ${b.available.toStringAsFixed(1)}',
+                                overflow: TextOverflow.ellipsis,
+                                maxLines: 1,
                               ),
                               Text(
                                 '${'Used'.tr(context)}: ${b.used.toStringAsFixed(1)}',
+                                overflow: TextOverflow.ellipsis,
+                                maxLines: 1,
                               ),
                             ],
                           ),
@@ -72,14 +72,8 @@ class LeavesScreen extends ConsumerWidget {
                       ),
                     ),
 
-                  const SizedBox(height: 16),
-                  Text(
-                    'Requests'.tr(context),
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
+                  AppSpacing.verticalMd,
+                  SectionHeader(title: 'Requests'.tr(context)),
                   if (state.requests.isEmpty)
                     EmptyState(
                       icon: Icons.emoji_events,
@@ -89,7 +83,11 @@ class LeavesScreen extends ConsumerWidget {
                     ...state.requests.map(
                       (r) => Card(
                         child: ListTile(
-                          title: Text('${r.leaveType?.name} • ${r.status}'),
+                          title: Text(
+                            '${r.leaveType?.name} • ${r.status}',
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
                           subtitle: Text(
                             '${r.startDate} → ${r.endDate}'
                             ' (${r.totalDays.toStringAsFixed(1)} ${'day'.tr(context)})',

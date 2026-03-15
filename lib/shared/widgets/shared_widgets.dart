@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hr_portal/core/localization/app_localizations.dart';
+import 'package:hr_portal/core/theme/app_spacing.dart';
 
 import '../controllers/global_error_handler.dart';
 import '../controllers/paginated_controller.dart';
@@ -21,7 +22,7 @@ class LoadingIndicator extends StatelessWidget {
         children: [
           const CircularProgressIndicator(),
           if (message != null) ...[
-            const SizedBox(height: 16),
+            AppSpacing.verticalMd,
             Text(message!, style: Theme.of(context).textTheme.bodyMedium),
           ],
         ],
@@ -48,7 +49,7 @@ class ErrorFullScreen extends StatelessWidget {
 
     return Center(
       child: Padding(
-        padding: const EdgeInsets.all(32),
+        padding: AppSpacing.paddingAllXl,
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -57,29 +58,29 @@ class ErrorFullScreen extends StatelessWidget {
               size: 64,
               color: Theme.of(context).colorScheme.error,
             ),
-            const SizedBox(height: 16),
+            AppSpacing.verticalMd,
             Text(
               error.title.tr(context),
               style: Theme.of(context).textTheme.titleLarge,
               textAlign: TextAlign.center,
             ),
-            const SizedBox(height: 8),
+            AppSpacing.verticalSm,
             Text(
               error.message.tr(context),
               style: Theme.of(context).textTheme.bodyMedium,
               textAlign: TextAlign.center,
             ),
             if (error.traceId != null) ...[
-              const SizedBox(height: 4),
+              AppSpacing.verticalXs,
               Text(
                 'Trace: ${error.traceId}',
-                style: Theme.of(
-                  context,
-                ).textTheme.bodySmall?.copyWith(color: Colors.grey),
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
               ),
             ],
             if (onRetry != null) ...[
-              const SizedBox(height: 24),
+              AppSpacing.verticalLg,
               FilledButton.icon(
                 onPressed: onRetry,
                 icon: const Icon(Icons.refresh),
@@ -108,24 +109,28 @@ class EmptyState extends StatelessWidget {
   Widget build(BuildContext context) {
     return Center(
       child: Padding(
-        padding: const EdgeInsets.all(32),
+        padding: AppSpacing.paddingAllXl,
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, size: 64, color: Colors.grey.shade400),
-            const SizedBox(height: 16),
+            Icon(
+              icon,
+              size: 64,
+              color: Theme.of(context).colorScheme.onSurfaceVariant.withValues(alpha: 0.4),
+            ),
+            AppSpacing.verticalMd,
             Text(
               title,
               style: Theme.of(context).textTheme.titleMedium,
               textAlign: TextAlign.center,
             ),
             if (subtitle != null) ...[
-              const SizedBox(height: 8),
+              AppSpacing.verticalSm,
               Text(
                 subtitle!,
-                style: Theme.of(
-                  context,
-                ).textTheme.bodyMedium?.copyWith(color: Colors.grey),
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
                 textAlign: TextAlign.center,
               ),
             ],
@@ -247,7 +252,7 @@ class _PaginatedListViewState<T> extends State<PaginatedListView<T>> {
           // Loading more indicator
           if (dataIndex >= s.items.length) {
             return const Padding(
-              padding: EdgeInsets.all(16),
+              padding: AppSpacing.paddingAllMd,
               child: Center(child: CircularProgressIndicator()),
             );
           }
@@ -345,7 +350,7 @@ class CacheImg extends StatelessWidget {
         return Icon(
           Icons.error_outline,
           size: sizeCircleLoading,
-          color: Colors.grey[500],
+          color: Theme.of(context).colorScheme.onSurfaceVariant,
         );
       },
     );

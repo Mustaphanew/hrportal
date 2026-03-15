@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hr_portal/core/localization/app_localizations.dart';
 import 'package:hr_portal/core/localization/locale_provider.dart';
+import 'package:hr_portal/core/theme/app_spacing.dart';
 import 'package:hr_portal/core/theme/theme_mode_provider.dart';
 import 'package:pwa_install/pwa_install.dart';
 
@@ -54,7 +55,7 @@ class LoginScreen extends ConsumerWidget {
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
-            padding: const EdgeInsets.all(24),
+            padding: AppSpacing.paddingAllLg,
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 400),
               child: Column(
@@ -66,7 +67,7 @@ class LoginScreen extends ConsumerWidget {
                     size: 64,
                     color: Theme.of(context).colorScheme.primary,
                   ),
-                  const SizedBox(height: 16),
+                  AppSpacing.verticalMd,
                   Text(
                     'Employee Self Service Portal'.tr(context),
                     textAlign: TextAlign.center,
@@ -75,9 +76,11 @@ class LoginScreen extends ConsumerWidget {
                               fontWeight: FontWeight.bold,
                             ),
                   ),
-                  const SizedBox(height: 0),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
+                  AppSpacing.verticalSm,
+                  Wrap(
+                    alignment: WrapAlignment.center,
+                    spacing: 8,
+                    runSpacing: 8,
                     children: [
 
                       PopupMenuButton<ThemeMode>(
@@ -120,7 +123,6 @@ class LoginScreen extends ConsumerWidget {
                         ],
                       ),
 
-                      const SizedBox(width: 8),
                       PopupMenuButton<AppLocaleMode>(
                         tooltip: 'Language'.tr(context),
                         padding: EdgeInsets.zero,
@@ -162,14 +164,7 @@ class LoginScreen extends ConsumerWidget {
                       ),
                     ],
                   ),
-                  // Text(
-                  //   'Sign in'.tr(context),
-                  //   textAlign: TextAlign.center,
-                  //   style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                  //         color: Colors.grey,
-                  //       ),
-                  // ),
-                  const SizedBox(height: 20),
+                  AppSpacing.verticalLg,
 
 
 
@@ -182,11 +177,10 @@ class LoginScreen extends ConsumerWidget {
                     decoration: InputDecoration(
                       labelText: 'Email or username'.tr(context),
                       prefixIcon: const Icon(Icons.person_outline),
-                      border: const OutlineInputBorder(),
                       errorText: form.fieldError('username'),
                     ),
                   ),
-                  const SizedBox(height: 16),
+                  AppSpacing.verticalMd,
 
                   // ── Password ──
                   TextField(
@@ -200,7 +194,6 @@ class LoginScreen extends ConsumerWidget {
                     decoration: InputDecoration(
                       labelText: 'Password'.tr(context),
                       prefixIcon: const Icon(Icons.lock_outline),
-                      border: const OutlineInputBorder(),
                       errorText: form.fieldError('password'),
                       suffixIcon: IconButton(
                         onPressed: notifier.togglePasswordVisibility,
@@ -212,7 +205,7 @@ class LoginScreen extends ConsumerWidget {
                       ),
                     ),
                   ),
-                  const SizedBox(height: 24),
+                  AppSpacing.verticalLg,
 
                   // ── Submit ──
                   SizedBox(
@@ -225,12 +218,12 @@ class LoginScreen extends ConsumerWidget {
                         notifier.submit();
                       } : null,
                       child: form.isLoading
-                          ? const SizedBox(
+                          ? SizedBox(
                               height: 20,
                               width: 20,
                               child: CircularProgressIndicator(
                                 strokeWidth: 2,
-                                color: Colors.white,
+                                color: Theme.of(context).colorScheme.onPrimary,
                               ),
                             )
                           : Text('Login'.tr(context)),
@@ -241,7 +234,7 @@ class LoginScreen extends ConsumerWidget {
                   if (form.error != null &&
                       form.error!.action == ErrorAction.showFieldErrors)
                     Padding(
-                      padding: const EdgeInsets.only(top: 16),
+                      padding: const EdgeInsets.only(top: AppSpacing.md),
                       child: Text(
                         form.error!.message,
                         style: TextStyle(
@@ -256,32 +249,6 @@ class LoginScreen extends ConsumerWidget {
           ),
         ),
       ),
-    );
-  }
-}
-
-class _ThemeChoiceButton extends StatelessWidget {
-  final String label;
-  final bool selected;
-  final VoidCallback onPressed;
-
-  const _ThemeChoiceButton({
-    required this.label,
-    required this.selected,
-    required this.onPressed,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    if (selected) {
-      return FilledButton.tonal(
-        onPressed: onPressed,
-        child: Text(label),
-      );
-    }
-    return OutlinedButton(
-      onPressed: onPressed,
-      child: Text(label),
     );
   }
 }

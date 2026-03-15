@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hr_portal/core/localization/app_localizations.dart';
+import 'package:hr_portal/core/theme/app_spacing.dart';
+import 'package:hr_portal/shared/widgets/app_components.dart';
 
 import '../../../../shared/widgets/shared_widgets.dart';
 import '../../../../shared/controllers/global_error_handler.dart';
@@ -81,15 +83,26 @@ class _RequestTile extends StatelessWidget {
           backgroundColor: statusColor.withOpacity(0.1),
           child: Icon(Icons.description, color: statusColor),
         ),
-        title: Text(request.subject ?? typeLabel.tr(context)),
-        subtitle: Text('${typeLabel.tr(context)}  •  ${request.createdAt.substring(0, 10)}'),
-        trailing: Chip(
-          label: Text(
-            statusLabel.tr(context),
-            style: TextStyle(color: statusColor, fontSize: 12),
+        title: Text(
+          request.subject ?? typeLabel.tr(context),
+          overflow: TextOverflow.ellipsis,
+          maxLines: 1,
+        ),
+        subtitle: Text(
+          '${typeLabel.tr(context)}  •  ${request.createdAt.substring(0, 10)}',
+          overflow: TextOverflow.ellipsis,
+          maxLines: 1,
+        ),
+        trailing: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 120),
+          child: Chip(
+            label: Text(
+              statusLabel.tr(context),
+              style: TextStyle(color: statusColor, fontSize: 12),
+            ),
+            side: BorderSide(color: statusColor),
+            backgroundColor: statusColor.withOpacity(0.1),
           ),
-          side: BorderSide(color: statusColor),
-          backgroundColor: statusColor.withOpacity(0.1),
         ),
       ),
     );
@@ -123,7 +136,6 @@ class CreateRequestScreen extends ConsumerWidget {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Request submitted successfully'.tr(context)),
-            backgroundColor: Colors.green,
           ),
         );
         context.pop();
@@ -138,7 +150,7 @@ class CreateRequestScreen extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(title: Text('New request'.tr(context))),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
+        padding: AppSpacing.paddingAllMd,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
@@ -147,7 +159,6 @@ class CreateRequestScreen extends ConsumerWidget {
               value: form.requestType.isEmpty ? null : form.requestType,
               decoration: InputDecoration(
                 labelText: 'Request type *'.tr(context),
-                border: const OutlineInputBorder(),
                 errorText: form.fieldError('request_type'),
               ),
               items: _types
@@ -162,7 +173,7 @@ class CreateRequestScreen extends ConsumerWidget {
                       if (v != null) notifier.setRequestType(v);
                     },
             ),
-            const SizedBox(height: 16),
+            AppSpacing.verticalMd,
 
             // ── Subject ──
             TextField(
@@ -170,11 +181,10 @@ class CreateRequestScreen extends ConsumerWidget {
               enabled: !form.isLoading,
               decoration: InputDecoration(
                 labelText: 'Subject *'.tr(context),
-                border: const OutlineInputBorder(),
                 errorText: form.fieldError('subject'),
               ),
             ),
-            const SizedBox(height: 16),
+            AppSpacing.verticalMd,
 
             // ── Description ──
             TextField(
@@ -183,27 +193,19 @@ class CreateRequestScreen extends ConsumerWidget {
               maxLines: 4,
               decoration: InputDecoration(
                 labelText: 'Details (optional)'.tr(context),
-                border: const OutlineInputBorder(),
                 errorText: form.fieldError('description'),
               ),
             ),
-            const SizedBox(height: 24),
+            AppSpacing.verticalLg,
 
             // ── Submit ──
             SizedBox(
               height: 48,
-              child: FilledButton(
-                onPressed: form.canSubmit ? notifier.submit : null,
-                child: form.isLoading
-                    ? const SizedBox(
-                        height: 20,
-                        width: 20,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          color: Colors.white,
-                        ),
-                      )
-                    : Text('Submit'.tr(context)),
+              child: AppLoadingButton(
+                isLoading: form.isLoading,
+                enabled: form.canSubmit,
+                onPressed: notifier.submit,
+                label: 'Submit'.tr(context),
               ),
             ),
           ],

@@ -4,8 +4,10 @@ import 'package:go_router/go_router.dart';
 import 'package:hr_portal/core/providers/core_providers.dart';
 import 'package:hr_portal/core/localization/app_localizations.dart';
 import 'package:hr_portal/core/localization/locale_provider.dart';
+import 'package:hr_portal/core/theme/app_spacing.dart';
 import 'package:hr_portal/core/theme/theme_mode_provider.dart';
 import 'package:hr_portal/features/profile/data/models/employee_profile_model.dart';
+import 'package:hr_portal/shared/widgets/app_components.dart';
 
 import '../../../../shared/widgets/shared_widgets.dart';
 import '../../../../shared/controllers/global_error_handler.dart';
@@ -90,7 +92,7 @@ class DashboardScreen extends ConsumerWidget {
           ref.invalidate(dashboardAttendanceProvider);
         },
         child: ListView(
-          padding: const EdgeInsets.all(16),
+          padding: AppSpacing.paddingAllMd,
           children: [
             // ── Profile Card ──
             profileAsync.when(
@@ -104,23 +106,15 @@ class DashboardScreen extends ConsumerWidget {
                 onRetry: () => ref.invalidate(profileProvider),
               ),
             ),
-            const SizedBox(height: 16),
+            AppSpacing.verticalMd,
 
             // ── Quick Actions ──
-            Text(
-              'Quick actions'.tr(context),
-              style: Theme.of(context).textTheme.titleMedium,
-            ),
-            const SizedBox(height: 8),
+            SectionHeader(title: 'Quick actions'.tr(context)),
             _QuickActionsGrid(),
-            const SizedBox(height: 24),
+            AppSpacing.verticalLg,
 
             // ── Attendance Summary ──
-            Text(
-              'Attendance summary — current month'.tr(context),
-              style: Theme.of(context).textTheme.titleMedium,
-            ),
-            const SizedBox(height: 8),
+            SectionHeader(title: 'Attendance summary — current month'.tr(context)),
             ref
                 .watch(dashboardAttendanceProvider)
                 .when(
@@ -203,11 +197,13 @@ class _ProfileCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
     return Card(
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: AppSpacing.paddingAllMd,
         child: Row(
-          children: [ 
+          children: [
             if (profile.photoUrl != null)
               ClipRRect(
                 borderRadius: BorderRadius.circular(8),
@@ -218,32 +214,28 @@ class _ProfileCard extends StatelessWidget {
                 radius: 28,
                 child: Text(profile.initials, style: const TextStyle(fontSize: 18)),
               ),
-            const SizedBox(width: 16),
+            AppSpacing.horizontalMd,
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     "${_getGreeting(context)} 👋",
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: Theme.of(context).colorScheme.primary,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
-                    ),
+                    style: textTheme.titleSmall?.copyWith(color: colorScheme.primary),
                   ),
-                  Text(profile.name, style: Theme.of(context).textTheme.titleMedium),
+                  Text(
+                    profile.name,
+                    style: textTheme.titleMedium,
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 1,
+                  ),
                   if (profile.jobTitle != null)
                     Text(
                       profile.jobTitle!,
-                      style: Theme.of(context).textTheme.bodyMedium,
+                      style: textTheme.bodyMedium,
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 1,
                     ),
-                  // if (profile.department != null && profile.department?.name != null)
-                  //   Text(
-                  //     profile.department!.name,
-                  //     style: Theme.of(
-                  //       context,
-                  //     ).textTheme.bodySmall?.copyWith(color: Colors.grey),
-                  //   ),
                 ],
               ),
             ),
@@ -257,12 +249,15 @@ class _ProfileCard extends StatelessWidget {
 class _QuickActionsGrid extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return GridView.count(
-      crossAxisCount: 2,
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final crossAxisCount = constraints.maxWidth >= AppBreakpoints.mobile ? 4 : 2;
+        return GridView.count(
+      crossAxisCount: crossAxisCount,
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
-      mainAxisSpacing: 8,
-      crossAxisSpacing: 8,
+      mainAxisSpacing: AppSpacing.sm,
+      crossAxisSpacing: AppSpacing.sm,
       childAspectRatio: 2.5,
       children: [
         _ActionTile(
@@ -286,6 +281,8 @@ class _QuickActionsGrid extends StatelessWidget {
           onTap: () => context.go('/requests'),
         ),
       ],
+        );
+      },
     );
   }
 }
@@ -308,13 +305,15 @@ class _ActionTile extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
         onTap: onTap,
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 12),
+          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
           child: Row(
             children: [
               Icon(icon, color: Theme.of(context).colorScheme.primary),
-              const SizedBox(width: 12),
-              Text(label.tr(context),
-                  style: Theme.of(context).textTheme.bodyLarge),
+              AppSpacing.horizontalMd,
+              Flexible(
+                child: Text(label.tr(context),
+                    style: Theme.of(context).textTheme.bodyLarge),
+              ),
             ],
           ),
         ),
@@ -331,7 +330,7 @@ class _AttendanceSummaryCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Card(
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: AppSpacing.paddingAllMd,
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
@@ -390,11 +389,11 @@ class _ErrorCard extends StatelessWidget {
     return Card(
       color: Theme.of(context).colorScheme.errorContainer,
       child: Padding(
-        padding: const EdgeInsets.all(12),
+        padding: AppSpacing.paddingAllMd,
         child: Row(
           children: [
             const Icon(Icons.error_outline),
-            const SizedBox(width: 8),
+            AppSpacing.horizontalSm,
             Expanded(child: Text(error.message.tr(context))),
             TextButton(
               onPressed: onRetry,

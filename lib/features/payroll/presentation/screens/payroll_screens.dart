@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hr_portal/core/localization/app_localizations.dart';
+import 'package:hr_portal/core/theme/app_spacing.dart';
+import 'package:hr_portal/shared/widgets/app_components.dart';
 
 import '../../../../shared/widgets/shared_widgets.dart';
 import '../../../../shared/controllers/global_error_handler.dart';
@@ -48,14 +50,16 @@ class _PayslipTile extends StatelessWidget {
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       child: ListTile(
         leading: CircleAvatar(
-          backgroundColor: Colors.green.shade50,
-          child: const Icon(Icons.payments, color: Colors.green),
+          backgroundColor: Theme.of(context).colorScheme.primaryContainer,
+          child: Icon(Icons.payments, color: Theme.of(context).colorScheme.primary),
         ),
         title: Text('${'Period'.tr(context)} $period'),
         subtitle: Text(
           '${'Gross'.tr(context)}: ${payslip.totalGross.toStringAsFixed(2)}'
           '  •  ${'Net'.tr(context)}: ${payslip.totalNet.toStringAsFixed(2)}'
           '${payslip.currency != null ? ' ${payslip.currency}' : ''}',
+          overflow: TextOverflow.ellipsis,
+          maxLines: 1,
         ),
         trailing: const Icon(Icons.chevron_right),
         onTap: () {
@@ -93,12 +97,12 @@ class PayslipDetailScreen extends ConsumerWidget {
           onRetry: () => ref.invalidate(payslipDetailProvider(month)),
         ),
         data: (payslip) => ListView(
-          padding: const EdgeInsets.all(16),
+          padding: AppSpacing.paddingAllMd,
           children: [
             // ── Summary Card ──
             Card(
               child: Padding(
-                padding: const EdgeInsets.all(16),
+                padding: AppSpacing.paddingAllMd,
                 child: Column(
                   children: [
                     _Row(
@@ -120,15 +124,11 @@ class PayslipDetailScreen extends ConsumerWidget {
                 ),
               ),
             ),
-            const SizedBox(height: 16),
+            AppSpacing.verticalMd,
 
             // ── Lines ──
             if (payslip.lines != null && payslip.lines!.isNotEmpty) ...[
-              Text(
-                'Details'.tr(context),
-                style: Theme.of(context).textTheme.titleMedium,
-              ),
-              const SizedBox(height: 8),
+              SectionHeader(title: 'Details'.tr(context)),
               ...payslip.lines!.map((line) => ListTile(
                     title: Text(
                       line.ruleName ?? line.ruleCode ?? 'Item'.tr(context),
@@ -154,7 +154,7 @@ class PayslipDetailScreen extends ConsumerWidget {
                 padding: const EdgeInsets.only(top: 16),
                 child: Card(
                   child: Padding(
-                    padding: const EdgeInsets.all(12),
+                    padding: AppSpacing.paddingAllMd,
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -195,8 +195,8 @@ class _Row extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label, style: style),
-          Text(value.toStringAsFixed(2), style: style),
+          Flexible(child: Text(label, style: style)),
+          Flexible(child: Text(value.toStringAsFixed(2), style: style)),
         ],
       ),
     );
